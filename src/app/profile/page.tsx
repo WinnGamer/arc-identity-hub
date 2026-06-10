@@ -68,7 +68,8 @@ export default function ProfilePage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
-      <main className="relative z-10 mx-auto max-w-xl px-4 pt-32 pb-24">
+      <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-start px-4 pt-28 pb-24">
+        <div className="w-full max-w-xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
           <h1 className="text-3xl font-bold text-white">Profile</h1>
 
@@ -195,6 +196,7 @@ export default function ProfilePage() {
             </GlowCard>
           )}
         </motion.div>
+        </div>
       </main>
     </div>
   )

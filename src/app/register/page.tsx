@@ -432,7 +432,8 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
-      <main className="relative z-10 mx-auto max-w-xl px-4 pt-32 pb-24">
+      <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-start px-4 pb-24 pt-28">
+        <div className="w-full max-w-xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-6">
             <Badge variant="purple" className="mb-3">
@@ -447,6 +448,7 @@ export default function RegisterPage() {
             <RegisterContent />
           </Suspense>
         </motion.div>
+        </div>
       </main>
     </div>
   )
