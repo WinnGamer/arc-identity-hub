@@ -175,9 +175,9 @@ export default function SearchPage() {
       <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-8 text-center">
+          <div className="mb-8 flex flex-col items-center text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white">Search</h1>
-            <p className="mx-auto mt-2 max-w-md text-base text-slate-400">
+            <p className="mt-2 max-w-md text-center text-base text-slate-400">
               Resolve any .arc domain or look up a wallet address
             </p>
           </div>

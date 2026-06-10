@@ -28,7 +28,7 @@ export function Navbar() {
     >
       <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
         <div className="relative rounded-2xl border border-[rgba(99,102,241,0.18)] bg-[rgba(5,5,8,0.86)] px-4 py-3 backdrop-blur-xl shadow-[0_8px_36px_rgba(0,0,0,0.42)] sm:px-5">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="relative flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex min-w-0 items-center gap-2" onClick={() => setOpen(false)}>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 shadow-[0_0_16px_rgba(99,102,241,0.55)]">
@@ -39,14 +39,14 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop nav links */}
-            <nav className="hidden items-center gap-2 md:flex">
+            {/* Desktop nav links — absolute center so logo/connect widths don't shift them */}
+            <nav className="absolute inset-0 hidden items-center justify-center gap-2 md:flex pointer-events-none">
               {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    'rounded-xl px-3.5 py-2 text-sm font-medium transition-all',
+                    'pointer-events-auto rounded-xl px-3.5 py-2 text-sm font-medium transition-all',
                     pathname === link.href
                       ? 'bg-[rgba(99,102,241,0.2)] text-indigo-200 shadow-[0_0_16px_rgba(99,102,241,0.08)]'
                       : 'text-slate-300 hover:bg-[rgba(99,102,241,0.1)] hover:text-white'
@@ -57,18 +57,19 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Mobile nav toggle */}
-            <button
-              type="button"
-              onClick={() => setOpen(v => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(99,102,241,0.18)] bg-[rgba(15,15,30,0.55)] text-slate-300 transition-colors hover:text-white md:hidden"
-              aria-label="Toggle navigation"
-            >
-              {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
+            {/* Right side: mobile toggle + connect button */}
+            <div className="flex items-center gap-3">
+              {/* Mobile nav toggle */}
+              <button
+                type="button"
+                onClick={() => setOpen(v => !v)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(99,102,241,0.18)] bg-[rgba(15,15,30,0.55)] text-slate-300 transition-colors hover:text-white md:hidden"
+                aria-label="Toggle navigation"
+              >
+                {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
 
-            {/* Connect button */}
-            <div className="flex justify-end">
+              {/* Connect button */}
               <ConnectButton
                 showBalance={false}
                 accountStatus="avatar"

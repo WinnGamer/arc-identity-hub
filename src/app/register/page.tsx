@@ -513,12 +513,12 @@ export default function RegisterPage() {
       <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-8 text-center">
+          <div className="mb-8 flex flex-col items-center text-center">
             <Badge variant="purple" className="mb-4">
               <Wallet className="h-3 w-3" /> Arc Testnet
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-white">Register your .arc name</h1>
-            <p className="mx-auto mt-3 max-w-md text-base text-slate-400">
+            <p className="mt-3 max-w-md text-center text-base text-slate-400">
               Claim a username directly on Arc Network — no redirect, no external mint page.
             </p>
           </div>
