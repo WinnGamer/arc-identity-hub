@@ -1,10 +1,10 @@
-// ZNS Registrar Contract — Arc Testnet
-// Contract: 0xFdd4FAB233d9aaA78Be2f799DED2DE449d3e7333
-// Reverse-engineered from ZNS.bio JS bundle (chunk 5646-88b0b0d78b903dd4.js)
+// ZNS Registry — Arc Testnet
+// Contract: 0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D (verified "ZNS Connect", symbol ".arc")
+// Source: ArcScan verified ABI at https://testnet.arcscan.app/address/0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D
 // USDC is the native gas token on Arc — no ERC-20 approve needed.
 
 export const ZNS_CONTRACT_ADDRESS =
-  '0xFdd4FAB233d9aaA78Be2f799DED2DE449d3e7333' as const
+  '0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D' as const
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
 
@@ -48,6 +48,13 @@ export const ZNS_ABI = [
         type: 'tuple',
       },
     ],
+  },
+  {
+    name: 'domainLookup',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ internalType: 'string', name: '', type: 'string' }],
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
   },
 ] as const
 

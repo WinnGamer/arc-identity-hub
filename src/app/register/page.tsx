@@ -176,29 +176,29 @@ function RegisterContent() {
     return (
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <GlowCard glow className="text-center">
-          <div className="mb-4 flex justify-center">
+          <div className="mb-5 flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 ring-2 ring-emerald-500/30">
               <PartyPopper className="h-8 w-8 text-emerald-400" />
             </div>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-white">
+          <h2 className="mb-3 text-2xl font-bold text-white">
             {formatDomain(name)} registered!
           </h2>
-          <p className="mb-6 text-sm text-[rgba(160,160,200,0.55)]">
+          <p className="mb-6 text-sm text-slate-400">
             Your .arc domain is now live on Arc Testnet.
           </p>
 
-          <div className="mb-6 space-y-2 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] p-4 text-left">
-            <div className="flex justify-between text-sm">
-              <span className="text-[rgba(160,160,200,0.55)]">Domain</span>
+          <div className="mb-6 divide-y divide-[rgba(99,102,241,0.15)] rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(8,8,18,0.5)] px-5 py-1">
+            <div className="flex justify-between py-3.5 text-sm">
+              <span className="text-slate-400">Domain</span>
               <span className="font-mono font-semibold text-indigo-300">{formatDomain(name)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-[rgba(160,160,200,0.55)]">Duration</span>
+            <div className="flex justify-between py-3.5 text-sm">
+              <span className="text-slate-400">Duration</span>
               <span className="font-medium text-white">{years} {years === 1 ? 'year' : 'years'}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-[rgba(160,160,200,0.55)]">Tx hash</span>
+            <div className="flex justify-between py-3.5 text-sm">
+              <span className="text-slate-400">Tx hash</span>
               <a
                 href={`https://testnet.arcscan.app/tx/${txHash}`}
                 target="_blank"
@@ -211,7 +211,7 @@ function RegisterContent() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <a
               href={`https://testnet.arcscan.app/tx/${txHash}`}
               target="_blank"
@@ -222,7 +222,7 @@ function RegisterContent() {
             </a>
             <button
               onClick={handleReset}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[rgba(15,15,30,0.6)] px-5 py-3 text-sm text-[rgba(160,160,200,0.6)] hover:text-white transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[rgba(15,15,30,0.6)] px-5 py-3 text-sm text-slate-400 hover:text-white transition-all"
             >
               <RefreshCw className="h-4 w-4" /> Register another
             </button>
@@ -234,10 +234,10 @@ function RegisterContent() {
 
   // ─── Main form ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Domain input */}
       <GlowCard>
-        <label className="mb-3 block text-sm font-medium text-[rgba(160,160,200,0.7)]">
+        <label className="mb-3 block text-sm font-medium text-slate-300">
           Choose your .arc name
         </label>
         <div className={cn(
@@ -251,7 +251,7 @@ function RegisterContent() {
             placeholder="yourname"
             maxLength={32}
             disabled={isBusy}
-            className="flex-1 bg-transparent px-4 py-3.5 text-white placeholder-[rgba(160,160,200,0.35)] outline-none font-mono disabled:opacity-50"
+            className="flex-1 bg-transparent px-4 py-3.5 text-white placeholder-slate-600 outline-none font-mono disabled:opacity-50"
           />
           <span className="mr-4 font-medium text-indigo-400">.arc</span>
           <div className="mr-4 flex h-5 w-5 items-center justify-center">
@@ -268,7 +268,7 @@ function RegisterContent() {
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-2 text-sm text-emerald-400"
+              className="mt-2.5 text-sm font-medium text-emerald-400"
             >
               ✓ {formatDomain(name)} is available!
             </motion.p>
@@ -279,7 +279,7 @@ function RegisterContent() {
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-2 text-sm text-red-400"
+              className="mt-2.5 text-sm font-medium text-red-400"
             >
               ✗ {formatDomain(name)} is already taken
             </motion.p>
@@ -287,7 +287,7 @@ function RegisterContent() {
         </AnimatePresence>
 
         {!isValidName(name) && name.length > 0 && (
-          <p className="mt-2 text-xs text-[rgba(160,160,200,0.5)]">
+          <p className="mt-2.5 text-xs text-slate-500">
             3–32 characters, letters, numbers, - and _ only
           </p>
         )}
@@ -303,19 +303,22 @@ function RegisterContent() {
             exit={{ opacity: 0, y: 6 }}
           >
             <GlowCard glow>
-              <h3 className="mb-4 font-semibold text-white">
+              <h3 className="mb-5 text-lg font-semibold text-white">
                 Register {formatDomain(name)}
               </h3>
 
-              {/* Price table */}
-              <div className="mb-4 space-y-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] p-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[rgba(160,160,200,0.6)]">Network</span>
+              {/* Price table — with dividers for clear separation */}
+              <div className="mb-5 divide-y divide-[rgba(99,102,241,0.15)] rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(8,8,18,0.5)] px-5 py-1">
+                {/* Network */}
+                <div className="flex justify-between py-3.5 text-sm">
+                  <span className="text-slate-400">Network</span>
                   <span className="font-medium text-white">Arc Testnet</span>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[rgba(160,160,200,0.6)]">Duration</span>
+
+                {/* Duration */}
+                <div className="py-4">
+                  <div className="flex justify-between text-sm mb-3">
+                    <span className="text-slate-400">Duration</span>
                     <span className="font-medium text-white">
                       {years} {years === 1 ? 'year' : 'years'}
                     </span>
@@ -328,10 +331,10 @@ function RegisterContent() {
                         onClick={() => setYears(option)}
                         disabled={isBusy}
                         className={cn(
-                          'rounded-lg border px-3 py-2 text-xs font-semibold transition-all',
+                          'rounded-lg border px-3 py-2.5 text-sm font-semibold transition-all',
                           years === option
                             ? 'border-indigo-400 bg-indigo-500/20 text-white shadow-[0_0_18px_rgba(99,102,241,0.25)]'
-                            : 'border-[rgba(99,102,241,0.16)] bg-[rgba(15,15,30,0.55)] text-[rgba(160,160,200,0.62)] hover:border-indigo-400/45 hover:text-white',
+                            : 'border-[rgba(99,102,241,0.2)] bg-[rgba(15,15,30,0.55)] text-slate-400 hover:border-indigo-400/45 hover:text-white',
                           isBusy && 'cursor-not-allowed opacity-60'
                         )}
                       >
@@ -340,27 +343,33 @@ function RegisterContent() {
                     ))}
                   </div>
                 </div>
+
+                {/* Annual price (if multi-year) */}
                 {annualPriceWei != null && years > 1 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[rgba(160,160,200,0.6)]">Annual price</span>
-                    <span className="font-medium text-[rgba(160,160,200,0.82)]">{formatUsdc(annualPriceWei)} / year</span>
+                  <div className="flex justify-between py-3.5 text-sm">
+                    <span className="text-slate-400">Annual price</span>
+                    <span className="font-medium text-slate-300">{formatUsdc(annualPriceWei)} / year</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-[rgba(160,160,200,0.6)]">Total price</span>
+
+                {/* Total price */}
+                <div className="flex justify-between py-3.5 text-sm">
+                  <span className="font-medium text-slate-300">Total price</span>
                   <span className={cn(
-                    'font-semibold',
-                    priceLoading ? 'text-[rgba(160,160,200,0.4)]' : 'text-emerald-400'
+                    'font-bold text-base',
+                    priceLoading ? 'text-slate-500' : 'text-emerald-400'
                   )}>
                     {priceLoading ? (
-                      <span className="flex items-center gap-1">
-                        <Loader2 className="h-3 w-3 animate-spin" /> loading…
+                      <span className="flex items-center gap-1.5">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> loading…
                       </span>
                     ) : priceLabel}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[rgba(160,160,200,0.6)]">Gas token</span>
+
+                {/* Gas token */}
+                <div className="flex justify-between py-3.5 text-sm">
+                  <span className="text-slate-400">Gas token</span>
                   <span className="font-medium text-white">USDC (native)</span>
                 </div>
               </div>
@@ -370,7 +379,7 @@ function RegisterContent() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mb-3 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300"
+                  className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300"
                 >
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   Wrong network — click Register to auto-switch to Arc Testnet
@@ -382,7 +391,7 @@ function RegisterContent() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300"
+                  className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
                 >
                   {txErrorMsg}
                 </motion.div>
@@ -391,7 +400,7 @@ function RegisterContent() {
               {/* CTA */}
               {!isConnected ? (
                 <div className="flex flex-col items-center gap-3">
-                  <p className="text-sm text-[rgba(160,160,200,0.55)]">
+                  <p className="text-sm text-slate-400">
                     Connect your wallet to register
                   </p>
                   <ConnectButton />
@@ -401,7 +410,7 @@ function RegisterContent() {
                   onClick={handleRegister}
                   disabled={isBusy || priceLoading || priceWei == null}
                   className={cn(
-                    'relative flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200',
+                    'relative flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-semibold text-white transition-all duration-200',
                     'bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]',
                     'shadow-[0_0_28px_rgba(99,102,241,0.35)]',
                     'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none'
@@ -428,7 +437,7 @@ function RegisterContent() {
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-2 text-center text-xs text-[rgba(160,160,200,0.45)]"
+                  className="mt-3 text-center text-xs text-slate-500"
                 >
                   Tx:{' '}
                   <a
@@ -447,10 +456,10 @@ function RegisterContent() {
       </AnimatePresence>
 
       {/* Info */}
-      <div className="flex items-start gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(15,15,30,0.5)] p-4">
+      <div className="flex items-start gap-3 rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(15,15,30,0.5)] p-5">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
-        <div className="text-xs text-[rgba(160,160,200,0.55)] leading-relaxed">
-          <strong className="text-[rgba(160,160,200,0.8)]">.arc domains</strong> are minted directly on-chain via ZNS Connect
+        <div className="text-sm text-slate-400 leading-relaxed">
+          <strong className="text-slate-300">.arc domains</strong> are minted directly on-chain via ZNS Connect
           on Arc Network (Chain ID 5042002). Choose 1, 2, 3, or 5 years before signing. You need USDC on Arc Testnet for the registration fee.{' '}
           <a
             href="https://faucet.circle.com"
@@ -473,12 +482,12 @@ export default function RegisterPage() {
       <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-7 text-center">
+          <div className="mb-8 text-center">
             <Badge variant="purple" className="mb-4">
               <Wallet className="h-3 w-3" /> Arc Testnet
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight text-white">Register your .arc name</h1>
-            <p className="mx-auto mt-2 max-w-md text-sm text-[rgba(160,160,200,0.58)]">
+            <p className="mx-auto mt-3 max-w-md text-base text-slate-400">
               Claim a username directly on Arc Network — no redirect, no external mint page.
             </p>
           </div>
