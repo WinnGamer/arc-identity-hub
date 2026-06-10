@@ -1,12 +1,16 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useAccount } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Navbar } from '@/components/layout/Navbar'
 import { Badge } from '@/components/ui/Badge'
-import { Wallet, Search } from 'lucide-react'
+import { Search, Wallet } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HomePage() {
+  const { isConnected } = useAccount()
+
   return (
     <div className="relative min-h-screen">
       <Navbar />
@@ -47,7 +51,7 @@ export default function HomePage() {
           Mint and manage your decentralized domain on Arc Network.
         </motion.p>
 
-        {/* Two buttons */}
+        {/* CTA buttons — order matches navbar: Search → Register */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -55,18 +59,31 @@ export default function HomePage() {
           className="flex flex-col gap-4 sm:flex-row"
         >
           <Link
-            href="/register"
-            className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-indigo-600 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(99,102,241,0.35)] transition-all hover:bg-indigo-500 active:scale-[0.98]"
-          >
-            <Wallet className="h-4 w-4" /> Register .arc name
-          </Link>
-          <Link
             href="/search"
             className="inline-flex items-center justify-center gap-2.5 rounded-2xl border border-[rgba(99,102,241,0.24)] bg-[rgba(15,15,30,0.58)] px-7 py-3.5 text-sm font-semibold text-indigo-200 transition-all hover:border-indigo-400/45 hover:bg-[rgba(99,102,241,0.12)]"
           >
             <Search className="h-4 w-4" /> Search identity
           </Link>
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-indigo-600 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(99,102,241,0.35)] transition-all hover:bg-indigo-500 active:scale-[0.98]"
+          >
+            <Wallet className="h-4 w-4" /> Register .arc name
+          </Link>
         </motion.div>
+
+        {/* Connect wallet — centered, not just in navbar corner */}
+        {!isConnected && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mt-10 flex flex-col items-center gap-3"
+          >
+            <p className="text-sm text-slate-500">Connect wallet to get started</p>
+            <ConnectButton />
+          </motion.div>
+        )}
 
         {/* Footer */}
         <motion.p
