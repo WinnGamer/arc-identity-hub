@@ -9,8 +9,8 @@ import { GlowCard } from '@/components/ui/GlowCard'
 import { Badge } from '@/components/ui/Badge'
 import { resolveAddress, formatDomain, shortenAddress } from '@/lib/zns'
 import {
-  User, ExternalLink, Copy, CheckCheck, Globe,
-  Twitter, Github, Star
+  User, ExternalLink, Copy, CheckCheck,
+  Star, MessageCircle, Hash,
 } from 'lucide-react'
 
 export default function ProfilePage() {
@@ -164,9 +164,9 @@ export default function ProfilePage() {
             <h3 className="mb-4 font-semibold text-white">Links</h3>
             <div className="space-y-3">
               {[
-                { icon: Globe, label: 'Website', placeholder: 'https://yoursite.com' },
-                { icon: Twitter, label: 'Twitter / X', placeholder: '@yourhandle' },
-                { icon: Github, label: 'GitHub', placeholder: 'yourusername' },
+                { icon: () => <svg className="h-4 w-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>, label: 'X', placeholder: '@yourhandle' },
+                { icon: MessageCircle, label: 'Telegram', placeholder: '@yourusername' },
+                { icon: Hash, label: 'Discord', placeholder: 'yourusername#0000' },
               ].map(({ icon: Icon, label, placeholder }) => (
                 <div key={label} className="flex items-center gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] px-4 py-3.5">
                   <Icon className="h-4 w-4 shrink-0 text-[rgba(99,102,241,0.5)]" />
