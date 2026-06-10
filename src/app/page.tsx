@@ -2,49 +2,25 @@
 
 import { motion } from 'framer-motion'
 import { Navbar } from '@/components/layout/Navbar'
-import { HeroSearch } from '@/components/home/HeroSearch'
-import { ConnectedIdentity } from '@/components/home/ConnectedIdentity'
 import { Badge } from '@/components/ui/Badge'
-import { Zap, Search, Globe, ArrowRight, Wallet } from 'lucide-react'
+import { Wallet, Search } from 'lucide-react'
 import Link from 'next/link'
-
-const features = [
-  {
-    icon: Search,
-    title: 'Resolve Identities',
-    desc: 'Look up any .arc name or reverse-resolve a wallet address instantly.',
-    href: '/search',
-  },
-  {
-    icon: Globe,
-    title: 'Register a Name',
-    desc: 'Mint your .arc domain on Arc Testnet. Your on-chain identity.',
-    href: '/register',
-  },
-  {
-    icon: Zap,
-    title: 'Manage Profile',
-    desc: 'Set your primary name, avatar, bio, and social links in one place.',
-    href: '/profile',
-  },
-]
 
 export default function HomePage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
 
-      {/* Hero */}
-      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 pt-24 pb-16">
-        {/* Live badge */}
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
+        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Badge variant="success" className="mb-6 text-xs">
+          <Badge variant="success" className="mb-8 text-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-            Live on Arc Testnet · Chain ID 5042002
+            Live on Arc Testnet
           </Badge>
         </motion.div>
 
@@ -53,7 +29,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="mb-4 text-center text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl"
+          className="mb-5 text-center text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl"
         >
           Your{' '}
           <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-indigo-300 bg-clip-text text-transparent">
@@ -66,79 +42,42 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-10 max-w-lg text-center text-base text-slate-400 sm:text-lg"
+          className="mb-12 max-w-md text-center text-lg text-slate-400 leading-relaxed"
         >
-          Mint, resolve, and manage your decentralized domain on Arc Network.
-          One name for your entire on-chain identity.
+          Mint and manage your decentralized domain on Arc Network.
         </motion.p>
 
-        {/* Primary actions */}
+        {/* Two buttons */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center"
+          className="flex flex-col gap-4 sm:flex-row"
         >
           <Link
             href="/register"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(99,102,241,0.35)] transition-all hover:bg-indigo-500 active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2.5 rounded-2xl bg-indigo-600 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_28px_rgba(99,102,241,0.35)] transition-all hover:bg-indigo-500 active:scale-[0.98]"
           >
             <Wallet className="h-4 w-4" /> Register .arc name
           </Link>
           <Link
             href="/search"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[rgba(99,102,241,0.24)] bg-[rgba(15,15,30,0.58)] px-5 py-3 text-sm font-semibold text-indigo-200 transition-all hover:border-indigo-400/45 hover:bg-[rgba(99,102,241,0.12)]"
+            className="inline-flex items-center justify-center gap-2.5 rounded-2xl border border-[rgba(99,102,241,0.24)] bg-[rgba(15,15,30,0.58)] px-7 py-3.5 text-sm font-semibold text-indigo-200 transition-all hover:border-indigo-400/45 hover:bg-[rgba(99,102,241,0.12)]"
           >
             <Search className="h-4 w-4" /> Search identity
           </Link>
         </motion.div>
 
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="w-full max-w-2xl"
-        >
-          <HeroSearch />
-        </motion.div>
-
-        {/* Connected identity widget */}
-        <ConnectedIdentity />
-
-        {/* Feature cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-          className="mt-16 grid w-full max-w-4xl gap-5 sm:grid-cols-3"
-        >
-          {features.map((f) => (
-            <Link key={f.href} href={f.href} className="group block">
-              <div className="h-full rounded-2xl border border-[rgba(99,102,241,0.15)] bg-[rgba(15,15,30,0.6)] p-5 backdrop-blur-sm transition-all duration-200 hover:border-[rgba(99,102,241,0.35)] hover:bg-[rgba(15,15,30,0.85)] hover:shadow-[0_0_24px_rgba(99,102,241,0.1)]">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/20">
-                  <f.icon className="h-4.5 w-4.5 text-indigo-400" />
-                </div>
-                <h3 className="mb-2 font-semibold text-white">{f.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
-                <div className="mt-3 flex items-center gap-1 text-xs font-medium text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100">
-                  Open <ArrowRight className="h-3 w-3" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </motion.div>
-
-        {/* Footer note */}
+        {/* Footer */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-16 text-center text-xs text-slate-500"
+          className="absolute bottom-8 text-center text-xs text-slate-600"
         >
           Powered by{' '}
           <a href="https://arc.network" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Arc Network</a>
-          {' '}&{' '}
+          {' '}·{' '}
           <a href="https://znsconnect.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">ZNS Connect</a>
         </motion.p>
       </main>
