@@ -124,7 +124,7 @@ function RegisterContent() {
             ) : (
               <div className="mt-4 space-y-3">
                 <a
-                  href={`https://zns.bio?chain=5042002`}
+                  href={`https://zns.bio/search?q=${encodeURIComponent(name)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-[0_0_24px_rgba(99,102,241,0.3)]"
