@@ -19,12 +19,12 @@ import {
   ZNS_CONTRACT_ADDRESS,
   ZNS_ABI,
   ZERO_ADDRESS,
-  buildExpiry,
   formatUsdc,
+  calcTotalPrice,
 } from '@/lib/zns-contract'
 import { cn } from '@/lib/utils'
 import {
-  Search, CheckCircle, XCircle, Loader2, ExternalLink,
+  CheckCircle, XCircle, Loader2, ExternalLink,
   AlertCircle, Wallet, ArrowRight, PartyPopper, RefreshCw,
 } from 'lucide-react'
 
@@ -45,16 +45,30 @@ function RegisterContent() {
   const [txErrorMsg, setTxErrorMsg] = useState('')
   const [years, setYears] = useState(1)
 
-  // ─── On-chain price read ───────────────────────────────────────────────────
+  // ─── On-chain price reads ──────────────────────────────────────────────────
   const nameLen = name.length as number
-  const { data: priceWei, isLoading: priceLoading } = useReadContract({
+  const priceEnabled = availability === 'available' && nameLen >= 3
+
+  const { data: registerPriceWei, isLoading: registerPriceLoading } = useReadContract({
     address: ZNS_CONTRACT_ADDRESS,
     abi: ZNS_ABI,
     functionName: 'priceToRegister',
     args: [nameLen as unknown as never],
     chainId: ARC_CHAIN_ID,
-    query: { enabled: availability === 'available' && nameLen >= 3 },
+    query: { enabled: priceEnabled },
   })
+
+  const { data: renewPriceWei, isLoading: renewPriceLoading } = useReadContract({
+    address: ZNS_CONTRACT_ADDRESS,
+    abi: ZNS_ABI,
+    functionName: 'priceToRenew',
+    args: [nameLen as unknown as never],
+    chainId: ARC_CHAIN_ID,
+    query: { enabled: priceEnabled },
+  })
+
+  const priceLoading = registerPriceLoading || renewPriceLoading
+  const pricesReady = registerPriceWei != null && renewPriceWei != null
 
   // ─── Write contract ────────────────────────────────────────────────────────
   const {
@@ -100,19 +114,24 @@ function RegisterContent() {
 
   // ─── Register handler ──────────────────────────────────────────────────────
   const handleRegister = async () => {
-    if (!address || !priceWei) return
+    if (!address || !pricesReady) return
     setTxErrorMsg('')
 
     try {
-      // Switch to Arc Testnet if needed
       if (chainId !== ARC_CHAIN_ID) {
         setTxStatus('confirm')
         await switchChainAsync({ chainId: ARC_CHAIN_ID })
       }
 
       setTxStatus('confirm')
-      const expiry = buildExpiry(years)
-      const totalPriceWei = (priceWei as bigint) * BigInt(years)
+
+      // Contract expects: expiry = number of years (NOT a timestamp!)
+      // Payment = priceToRegister + priceToRenew * (years - 1)
+      const totalPrice = calcTotalPrice(
+        registerPriceWei as bigint,
+        renewPriceWei as bigint,
+        years,
+      )
 
       const hash = await writeContractAsync({
         address: ZNS_CONTRACT_ADDRESS,
@@ -121,11 +140,11 @@ function RegisterContent() {
         args: [
           [address],
           [name],
-          [expiry],
+          [BigInt(years)],   // expiry = number of years
           ZERO_ADDRESS,
           0n,
         ],
-        value: totalPriceWei,
+        value: totalPrice,
         chainId: ARC_CHAIN_ID,
       })
 
@@ -158,8 +177,10 @@ function RegisterContent() {
   // ─── Derived state ─────────────────────────────────────────────────────────
   const isWrongChain = isConnected && chainId !== ARC_CHAIN_ID
   const isBusy = writeIsPending || txConfirming || txStatus === 'confirm' || txStatus === 'pending'
-  const annualPriceWei = priceWei as bigint | undefined
-  const totalPriceWei = annualPriceWei != null ? annualPriceWei * BigInt(years) : undefined
+
+  const totalPriceWei = pricesReady
+    ? calcTotalPrice(registerPriceWei as bigint, renewPriceWei as bigint, years)
+    : undefined
   const priceLabel = totalPriceWei != null
     ? formatUsdc(totalPriceWei)
     : priceLoading ? '...' : '—'
@@ -216,13 +237,13 @@ function RegisterContent() {
               href={`https://testnet.arcscan.app/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-600/10 px-5 py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-600/20 transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-600/10 px-5 py-3.5 text-sm font-semibold text-indigo-300 hover:bg-indigo-600/20 transition-all"
             >
               View on ArcScan <ExternalLink className="h-4 w-4" />
             </a>
             <button
               onClick={handleReset}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[rgba(15,15,30,0.6)] px-5 py-3 text-sm text-slate-400 hover:text-white transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[rgba(15,15,30,0.6)] px-5 py-3.5 text-sm text-slate-400 hover:text-white transition-all"
             >
               <RefreshCw className="h-4 w-4" /> Register another
             </button>
@@ -234,7 +255,7 @@ function RegisterContent() {
 
   // ─── Main form ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Domain input */}
       <GlowCard>
         <label className="mb-3 block text-sm font-medium text-slate-300">
@@ -323,7 +344,7 @@ function RegisterContent() {
                       {years} {years === 1 ? 'year' : 'years'}
                     </span>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 gap-2.5">
                     {[1, 2, 3, 5].map(option => (
                       <button
                         key={option}
@@ -344,19 +365,29 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* Annual price (if multi-year) */}
-                {annualPriceWei != null && years > 1 && (
+                {/* Registration price */}
+                {pricesReady && (
                   <div className="flex justify-between py-3.5 text-sm">
-                    <span className="text-slate-400">Annual price</span>
-                    <span className="font-medium text-slate-300">{formatUsdc(annualPriceWei)} / year</span>
+                    <span className="text-slate-400">Registration (1st year)</span>
+                    <span className="font-medium text-slate-300">{formatUsdc(registerPriceWei as bigint)}</span>
+                  </div>
+                )}
+
+                {/* Renewal price (if multi-year) */}
+                {pricesReady && years > 1 && (
+                  <div className="flex justify-between py-3.5 text-sm">
+                    <span className="text-slate-400">Renewal × {years - 1} {years - 1 === 1 ? 'year' : 'years'}</span>
+                    <span className="font-medium text-slate-300">
+                      {formatUsdc((renewPriceWei as bigint) * BigInt(years - 1))}
+                    </span>
                   </div>
                 )}
 
                 {/* Total price */}
-                <div className="flex justify-between py-3.5 text-sm">
-                  <span className="font-medium text-slate-300">Total price</span>
+                <div className="flex justify-between items-center py-4 text-sm">
+                  <span className="font-semibold text-slate-200">Total</span>
                   <span className={cn(
-                    'font-bold text-base',
+                    'font-bold text-lg',
                     priceLoading ? 'text-slate-500' : 'text-emerald-400'
                   )}>
                     {priceLoading ? (
@@ -379,7 +410,7 @@ function RegisterContent() {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mb-4 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300"
+                  className="mb-4 flex items-center gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300"
                 >
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   Wrong network — click Register to auto-switch to Arc Testnet
@@ -399,7 +430,7 @@ function RegisterContent() {
 
               {/* CTA */}
               {!isConnected ? (
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-3 py-2">
                   <p className="text-sm text-slate-400">
                     Connect your wallet to register
                   </p>
@@ -408,7 +439,7 @@ function RegisterContent() {
               ) : (
                 <button
                   onClick={handleRegister}
-                  disabled={isBusy || priceLoading || priceWei == null}
+                  disabled={isBusy || priceLoading || !pricesReady}
                   className={cn(
                     'relative flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-semibold text-white transition-all duration-200',
                     'bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98]',
@@ -456,7 +487,7 @@ function RegisterContent() {
       </AnimatePresence>
 
       {/* Info */}
-      <div className="flex items-start gap-3 rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(15,15,30,0.5)] p-5">
+      <div className="flex items-start gap-3.5 rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(15,15,30,0.5)] p-5">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
         <div className="text-sm text-slate-400 leading-relaxed">
           <strong className="text-slate-300">.arc domains</strong> are minted directly on-chain via ZNS Connect

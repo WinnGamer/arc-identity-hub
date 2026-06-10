@@ -59,7 +59,7 @@ function SearchContent() {
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && doSearch(query)}
           placeholder="Enter .arc name or 0x address..."
-          className="flex-1 bg-transparent px-4 py-4 text-white placeholder-[rgba(160,160,200,0.4)] outline-none"
+          className="flex-1 bg-transparent px-4 py-4 text-white placeholder-slate-600 outline-none"
         />
         <button
           onClick={() => doSearch(query)}
@@ -85,13 +85,13 @@ function SearchContent() {
                     <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
                     <div>
                       <p className="font-semibold text-white text-lg">{result.query}</p>
-                      <p className="mt-1 text-sm text-[rgba(160,160,200,0.6)]">Resolves to:</p>
+                      <p className="mt-1 text-sm text-slate-400">Resolves to:</p>
                       <p className="font-mono text-sm text-indigo-300 mt-0.5 break-all">{result.data.address}</p>
                       <div className="mt-4 flex gap-3 flex-wrap">
                         <a
                           href={`https://testnet.arcscan.app/address/${result.data.address}`}
                           target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs text-[rgba(160,160,200,0.6)] hover:text-white transition-colors"
+                          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
                         >
                           <ExternalLink className="h-3 w-3" /> View on ArcScan
                         </a>
@@ -100,10 +100,10 @@ function SearchContent() {
                   </>
                 ) : (
                   <>
-                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-[rgba(160,160,200,0.4)]" />
+                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />
                     <div>
                       <p className="font-semibold text-white">{result.query}</p>
-                      <p className="mt-1 text-sm text-[rgba(160,160,200,0.5)]">This name is not registered yet</p>
+                      <p className="mt-1 text-sm text-slate-400">This name is not registered yet</p>
                       <Link
                         href={`/register?name=${encodeURIComponent(result.query.replace('.arc',''))}`}
                         className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-3 py-1.5 text-xs font-medium text-indigo-300 hover:bg-indigo-600/30 transition-colors"
@@ -122,13 +122,13 @@ function SearchContent() {
                   <>
                     <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[rgba(160,160,200,0.6)]">Wallet</p>
+                      <p className="text-sm text-slate-400">Wallet</p>
                       <p className="font-mono text-xs text-indigo-300 break-all">{result.query}</p>
-                      <p className="mt-3 text-sm text-[rgba(160,160,200,0.6)]">Primary .arc name</p>
+                      <p className="mt-3 text-sm text-slate-400">Primary .arc name</p>
                       <p className="text-xl font-bold text-white">{formatDomain(result.data.primaryDomain)}</p>
                       {result.data.userOwnedDomains?.length > 1 && (
                         <div className="mt-3">
-                          <p className="text-xs text-[rgba(160,160,200,0.5)] mb-2">All owned domains:</p>
+                          <p className="text-xs text-slate-400 mb-2">All owned domains:</p>
                           <div className="flex flex-wrap gap-1.5">
                             {result.data.userOwnedDomains.map((d: string) => (
                               <span key={d} className="rounded-lg border border-[rgba(99,102,241,0.2)] bg-[rgba(99,102,241,0.08)] px-2 py-0.5 text-xs text-indigo-300">
@@ -141,7 +141,7 @@ function SearchContent() {
                       <a
                         href={`https://testnet.arcscan.app/address/${result.query}`}
                         target="_blank" rel="noopener noreferrer"
-                        className="mt-4 flex items-center gap-1.5 text-xs text-[rgba(160,160,200,0.5)] hover:text-white transition-colors w-fit"
+                        className="mt-4 flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors w-fit"
                       >
                         <ExternalLink className="h-3 w-3" /> View on ArcScan
                       </a>
@@ -149,9 +149,9 @@ function SearchContent() {
                   </>
                 ) : (
                   <>
-                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-[rgba(160,160,200,0.4)]" />
+                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" />
                     <div>
-                      <p className="text-sm text-[rgba(160,160,200,0.6)]">No .arc name found for:</p>
+                      <p className="text-sm text-slate-400">No .arc name found for:</p>
                       <p className="font-mono text-xs text-indigo-300 break-all mt-1">{result.query}</p>
                       <Link href="/register" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 px-3 py-1.5 text-xs font-medium text-indigo-300 hover:bg-indigo-600/30 transition-colors">
                         Get your .arc name <ArrowRight className="h-3 w-3" />
@@ -177,7 +177,7 @@ export default function SearchPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white">Search</h1>
-            <p className="mx-auto mt-2 max-w-md text-base text-[rgba(160,160,200,0.55)]">
+            <p className="mx-auto mt-2 max-w-md text-base text-slate-400">
               Resolve any .arc domain or look up a wallet address
             </p>
           </div>

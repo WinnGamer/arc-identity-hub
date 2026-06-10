@@ -66,7 +66,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-10 max-w-lg text-center text-base text-[rgba(160,160,200,0.65)] sm:text-lg"
+          className="mb-10 max-w-lg text-center text-base text-slate-400 sm:text-lg"
         >
           Mint, resolve, and manage your decentralized domain on Arc Network.
           One name for your entire on-chain identity.
@@ -111,7 +111,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="mt-16 grid w-full max-w-4xl gap-4 sm:grid-cols-3"
+          className="mt-16 grid w-full max-w-4xl gap-5 sm:grid-cols-3"
         >
           {features.map((f) => (
             <Link key={f.href} href={f.href} className="group block">
@@ -119,8 +119,8 @@ export default function HomePage() {
                 <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/20">
                   <f.icon className="h-4.5 w-4.5 text-indigo-400" />
                 </div>
-                <h3 className="mb-1.5 font-semibold text-white">{f.title}</h3>
-                <p className="text-sm text-[rgba(160,160,200,0.6)] leading-relaxed">{f.desc}</p>
+                <h3 className="mb-2 font-semibold text-white">{f.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
                 <div className="mt-3 flex items-center gap-1 text-xs font-medium text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100">
                   Open <ArrowRight className="h-3 w-3" />
                 </div>
@@ -134,12 +134,12 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-16 text-center text-xs text-[rgba(160,160,200,0.3)]"
+          className="mt-16 text-center text-xs text-slate-500"
         >
           Powered by{' '}
-          <a href="https://arc.network" target="_blank" rel="noopener noreferrer" className="underline hover:text-[rgba(160,160,200,0.6)]">Arc Network</a>
+          <a href="https://arc.network" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">Arc Network</a>
           {' '}&{' '}
-          <a href="https://znsconnect.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-[rgba(160,160,200,0.6)]">ZNS Connect</a>
+          <a href="https://znsconnect.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">ZNS Connect</a>
         </motion.p>
       </main>
     </div>

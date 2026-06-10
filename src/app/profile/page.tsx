@@ -54,7 +54,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Your Profile</h1>
-              <p className="mt-2 text-sm text-[rgba(160,160,200,0.55)]">
+              <p className="mt-2 text-sm text-slate-400">
                 Connect your wallet to view your .arc identity
               </p>
             </div>
@@ -70,10 +70,10 @@ export default function ProfilePage() {
       <Navbar />
       <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white">Profile</h1>
-            <p className="mt-2 text-sm text-[rgba(160,160,200,0.58)]">Your connected wallet identity on Arc Network</p>
+            <p className="mt-3 text-base text-slate-400">Your connected wallet identity on Arc Network</p>
           </div>
 
           {/* Identity card */}
@@ -95,7 +95,7 @@ export default function ProfilePage() {
                       {primaryDomain ? (
                         <h2 className="text-xl font-bold text-white">{primaryDomain}</h2>
                       ) : (
-                        <h2 className="text-sm text-[rgba(160,160,200,0.5)]">No primary name set</h2>
+                        <h2 className="text-sm text-slate-400">No primary name set</h2>
                       )}
                       <Badge variant="success">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
@@ -103,12 +103,12 @@ export default function ProfilePage() {
                       </Badge>
                     </div>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="font-mono text-xs text-[rgba(160,160,200,0.5)]">
+                      <span className="font-mono text-xs text-slate-400">
                         {shortenAddress(address!, 8)}
                       </span>
                       <button
                         onClick={copyAddress}
-                        className="text-[rgba(160,160,200,0.4)] hover:text-white transition-colors"
+                        className="text-slate-500 hover:text-white transition-colors"
                         title="Copy address"
                       >
                         {copied ? <CheckCheck className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
@@ -120,7 +120,7 @@ export default function ProfilePage() {
               <a
                 href={`https://testnet.arcscan.app/address/${address}`}
                 target="_blank" rel="noopener noreferrer"
-                className="shrink-0 text-[rgba(160,160,200,0.4)] hover:text-white transition-colors"
+                className="shrink-0 text-slate-500 hover:text-white transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
               </a>
@@ -162,24 +162,24 @@ export default function ProfilePage() {
           {/* Social links (placeholder for future) */}
           <GlowCard>
             <h3 className="mb-4 font-semibold text-white">Links</h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {[
                 { icon: Globe, label: 'Website', placeholder: 'https://yoursite.com' },
                 { icon: Twitter, label: 'Twitter / X', placeholder: '@yourhandle' },
                 { icon: Github, label: 'GitHub', placeholder: 'yourusername' },
               ].map(({ icon: Icon, label, placeholder }) => (
-                <div key={label} className="flex items-center gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] px-4 py-3">
+                <div key={label} className="flex items-center gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] px-4 py-3.5">
                   <Icon className="h-4 w-4 shrink-0 text-[rgba(99,102,241,0.5)]" />
                   <input
                     type="text"
                     placeholder={placeholder}
                     disabled
-                    className="flex-1 bg-transparent text-sm text-[rgba(160,160,200,0.4)] placeholder-[rgba(160,160,200,0.25)] outline-none cursor-not-allowed"
+                    className="flex-1 bg-transparent text-sm text-slate-500 placeholder-slate-600 outline-none cursor-not-allowed"
                   />
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-xs text-[rgba(160,160,200,0.3)]">
+            <p className="mt-3 text-xs text-slate-500">
               On-chain profile records — coming in next update
             </p>
           </GlowCard>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
           {!loading && domains.length === 0 && (
             <GlowCard>
               <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <p className="text-sm text-[rgba(160,160,200,0.55)]">You don't have any .arc domains yet</p>
+                <p className="text-sm text-slate-400">You don't have any .arc domains yet</p>
                 <a
                   href="/register"
                   className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"

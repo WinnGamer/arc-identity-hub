@@ -53,7 +53,7 @@ export function ConnectedIdentity() {
               ) : primaryDomain ? (
                 <h3 className="text-lg font-semibold text-white">{primaryDomain}</h3>
               ) : (
-                <h3 className="text-sm text-[rgba(160,160,200,0.6)]">No .arc name set</h3>
+                <h3 className="text-sm text-slate-400">No .arc name set</h3>
               )}
               <Badge variant="success">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 inline-block" />
@@ -61,7 +61,7 @@ export function ConnectedIdentity() {
               </Badge>
             </div>
 
-            <p className="mt-0.5 font-mono text-xs text-[rgba(160,160,200,0.5)]">
+            <p className="mt-0.5 font-mono text-xs text-slate-400">
               {address ? shortenAddress(address, 6) : ''}
             </p>
 
@@ -77,7 +77,7 @@ export function ConnectedIdentity() {
                   </span>
                 ))}
                 {domains.length > 5 && (
-                  <span className="text-xs text-[rgba(160,160,200,0.5)] self-center">+{domains.length - 5} more</span>
+                  <span className="text-xs text-slate-400 self-center">+{domains.length - 5} more</span>
                 )}
               </div>
             )}
@@ -96,7 +96,7 @@ export function ConnectedIdentity() {
                 href={`https://testnet.arcscan.app/address/${address}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-lg border border-[rgba(99,102,241,0.12)] px-3 py-1.5 text-xs text-[rgba(160,160,200,0.6)] hover:text-white transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-[rgba(99,102,241,0.12)] px-3 py-1.5 text-xs text-slate-400 hover:text-white transition-colors"
               >
                 <ExternalLink className="h-3 w-3" /> Explorer
               </a>

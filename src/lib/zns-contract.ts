@@ -1,7 +1,11 @@
 // ZNS Registry — Arc Testnet
 // Contract: 0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D (verified "ZNS Connect", symbol ".arc")
-// Source: ArcScan verified ABI at https://testnet.arcscan.app/address/0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D
-// USDC is the native gas token on Arc — no ERC-20 approve needed.
+// Source: ArcScan verified at https://testnet.arcscan.app/address/0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D
+//
+// Key insight from source:
+//   The `expiry` parameter in registerDomains is the NUMBER OF YEARS, NOT a timestamp!
+//   total = priceToRegister(len) + priceToRenew(len) * (years - 1)
+//   USDC is the native gas token on Arc — no ERC-20 approve needed.
 
 export const ZNS_CONTRACT_ADDRESS =
   '0xf180136DdC9e4F8c9b5A9FE59e2b1f07265C5D4D' as const
@@ -12,6 +16,13 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as cons
 export const ZNS_ABI = [
   {
     name: 'priceToRegister',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ internalType: 'uint16', name: 'len', type: 'uint16' }],
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+  },
+  {
+    name: 'priceToRenew',
     type: 'function',
     stateMutability: 'view',
     inputs: [{ internalType: 'uint16', name: 'len', type: 'uint16' }],
@@ -58,18 +69,23 @@ export const ZNS_ABI = [
   },
 ] as const
 
-/** 1 year in seconds */
-export const ONE_YEAR_SECONDS = 31_536_000n
-
-/** Build expiry timestamp = now + N years */
-export function buildExpiry(years = 1): bigint {
-  return BigInt(Math.floor(Date.now() / 1000)) + (ONE_YEAR_SECONDS * BigInt(years))
-}
-
 /** Format a wei USDC value (18 decimals) to human-readable string */
 export function formatUsdc(wei: bigint): string {
   const usdc = Number(wei) / 1e18
   if (usdc === 0) return '0 USDC'
   if (usdc < 0.0001) return '< 0.0001 USDC'
   return `${usdc.toFixed(4).replace(/\.?0+$/, '')} USDC`
+}
+
+/**
+ * Calculate total price from contract values.
+ *   total = priceToRegister + priceToRenew * (years - 1)
+ */
+export function calcTotalPrice(
+  registerPrice: bigint,
+  renewPrice: bigint,
+  years: number,
+): bigint {
+  if (years <= 1) return registerPrice
+  return registerPrice + renewPrice * BigInt(years - 1)
 }

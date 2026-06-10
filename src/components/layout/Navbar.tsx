@@ -49,7 +49,7 @@ export function Navbar() {
                     'rounded-xl px-3.5 py-2 text-sm font-medium transition-all',
                     pathname === link.href
                       ? 'bg-[rgba(99,102,241,0.2)] text-indigo-200 shadow-[0_0_16px_rgba(99,102,241,0.08)]'
-                      : 'text-[rgba(160,160,200,0.72)] hover:bg-[rgba(99,102,241,0.1)] hover:text-white'
+                      : 'text-slate-300 hover:bg-[rgba(99,102,241,0.1)] hover:text-white'
                   )}
                 >
                   {link.label}
@@ -61,7 +61,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setOpen(v => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(99,102,241,0.18)] bg-[rgba(15,15,30,0.55)] text-[rgba(160,160,200,0.78)] transition-colors hover:text-white md:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgba(99,102,241,0.18)] bg-[rgba(15,15,30,0.55)] text-slate-300 transition-colors hover:text-white md:hidden"
               aria-label="Toggle navigation"
             >
               {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -96,7 +96,7 @@ export function Navbar() {
                         'rounded-xl px-3.5 py-2.5 text-center text-sm font-medium transition-all',
                         pathname === link.href
                           ? 'bg-[rgba(99,102,241,0.2)] text-indigo-200'
-                          : 'bg-[rgba(15,15,30,0.45)] text-[rgba(160,160,200,0.72)] hover:bg-[rgba(99,102,241,0.1)] hover:text-white'
+                          : 'bg-[rgba(15,15,30,0.45)] text-slate-300 hover:bg-[rgba(99,102,241,0.1)] hover:text-white'
                       )}
                     >
                       {link.label}

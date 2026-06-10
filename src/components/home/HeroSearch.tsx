@@ -76,7 +76,7 @@ export function HeroSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search domain or paste address..."
-            className="flex-1 bg-transparent px-4 py-4 text-white placeholder-[rgba(160,160,200,0.4)] outline-none"
+            className="flex-1 bg-transparent px-4 py-4 text-white placeholder-slate-600 outline-none"
           />
           <button
             onClick={handleSearch}
@@ -99,7 +99,7 @@ export function HeroSearch() {
         </div>
 
         {/* Hint text */}
-        <p className="mt-2 text-center text-xs text-[rgba(160,160,200,0.4)]">
+        <p className="mt-2 text-center text-xs text-slate-500">
           Enter a .arc name or wallet address (0x...)
         </p>
       </div>
@@ -121,19 +121,19 @@ export function HeroSearch() {
                 <div className="flex-1 min-w-0">
                   {result.type === 'domain' ? (
                     <>
-                      <p className="text-sm text-[rgba(160,160,200,0.7)]">
+                      <p className="text-sm text-slate-300">
                         <span className="font-medium text-white">{result.value}</span> resolves to:
                       </p>
                       <p className="mt-1 font-mono text-sm text-indigo-300 break-all">{result.resolved}</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-sm text-[rgba(160,160,200,0.7)]">
+                      <p className="text-sm text-slate-300">
                         Primary name for <span className="font-mono text-indigo-300">{shortenAddress(result.value)}</span>:
                       </p>
                       <p className="mt-1 text-lg font-semibold text-white">{result.resolved}</p>
                       {result.domains && result.domains.length > 1 && (
-                        <p className="mt-1.5 text-xs text-[rgba(160,160,200,0.5)]">
+                        <p className="mt-1.5 text-xs text-slate-400">
                           Also owns: {result.domains.slice(1, 4).join(', ')}
                           {result.domains.length > 4 && ` +${result.domains.length - 4} more`}
                         </p>
@@ -150,9 +150,9 @@ export function HeroSearch() {
               </div>
             ) : (
               <div className="flex items-start gap-3">
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-[rgba(160,160,200,0.5)]" />
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                 <div>
-                  <p className="text-sm text-[rgba(160,160,200,0.7)]">
+                  <p className="text-sm text-slate-300">
                     {result.type === 'domain'
                       ? `${result.value} is not registered yet`
                       : 'No .arc name found for this address'}
