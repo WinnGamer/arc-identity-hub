@@ -35,7 +35,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero */}
-      <main className="relative z-10 flex flex-col items-center px-4 pt-32 pb-24">
+      <main className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 pt-24 pb-16">
         {/* Live badge */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}

@@ -160,7 +160,7 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
-      <main className="relative z-10 mx-auto max-w-lg px-4 pt-32 pb-24">
+      <main className="relative z-10 mx-auto max-w-xl px-4 pt-32 pb-24">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-6">
             <Badge variant="purple" className="mb-3">
