@@ -172,13 +172,15 @@ export default function SearchPage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
-      <main className="relative z-10 flex min-h-screen items-start justify-center px-4 pt-32 pb-24">
+      <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="mb-2 text-4xl font-bold text-white">Search</h1>
-          <p className="mb-8 text-base text-[rgba(160,160,200,0.55)]">
-            Resolve any .arc domain or look up a wallet address
-          </p>
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-white">Search</h1>
+            <p className="mx-auto mt-2 max-w-md text-base text-[rgba(160,160,200,0.55)]">
+              Resolve any .arc domain or look up a wallet address
+            </p>
+          </div>
           <Suspense fallback={null}>
             <SearchContent />
           </Suspense>

@@ -43,6 +43,7 @@ function RegisterContent() {
   const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [txStatus, setTxStatus] = useState<TxStatus>('idle')
   const [txErrorMsg, setTxErrorMsg] = useState('')
+  const [years, setYears] = useState(1)
 
   // ─── On-chain price read ───────────────────────────────────────────────────
   const nameLen = name.length as number
@@ -110,7 +111,8 @@ function RegisterContent() {
       }
 
       setTxStatus('confirm')
-      const expiry = buildExpiry()
+      const expiry = buildExpiry(years)
+      const totalPriceWei = (priceWei as bigint) * BigInt(years)
 
       const hash = await writeContractAsync({
         address: ZNS_CONTRACT_ADDRESS,
@@ -123,7 +125,7 @@ function RegisterContent() {
           ZERO_ADDRESS,
           0n,
         ],
-        value: priceWei as bigint,
+        value: totalPriceWei,
         chainId: ARC_CHAIN_ID,
       })
 
@@ -145,6 +147,7 @@ function RegisterContent() {
 
   const handleReset = () => {
     setName('')
+    setYears(1)
     setAvailability('idle')
     setTxStatus('idle')
     setTxHash(undefined)
@@ -155,8 +158,10 @@ function RegisterContent() {
   // ─── Derived state ─────────────────────────────────────────────────────────
   const isWrongChain = isConnected && chainId !== ARC_CHAIN_ID
   const isBusy = writeIsPending || txConfirming || txStatus === 'confirm' || txStatus === 'pending'
-  const priceLabel = priceWei != null
-    ? formatUsdc(priceWei as bigint)
+  const annualPriceWei = priceWei as bigint | undefined
+  const totalPriceWei = annualPriceWei != null ? annualPriceWei * BigInt(years) : undefined
+  const priceLabel = totalPriceWei != null
+    ? formatUsdc(totalPriceWei)
     : priceLoading ? '...' : '—'
 
   const statusBorder = {
@@ -187,6 +192,10 @@ function RegisterContent() {
             <div className="flex justify-between text-sm">
               <span className="text-[rgba(160,160,200,0.55)]">Domain</span>
               <span className="font-mono font-semibold text-indigo-300">{formatDomain(name)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-[rgba(160,160,200,0.55)]">Duration</span>
+              <span className="font-medium text-white">{years} {years === 1 ? 'year' : 'years'}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[rgba(160,160,200,0.55)]">Tx hash</span>
@@ -225,7 +234,7 @@ function RegisterContent() {
 
   // ─── Main form ─────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Domain input */}
       <GlowCard>
         <label className="mb-3 block text-sm font-medium text-[rgba(160,160,200,0.7)]">
@@ -304,12 +313,41 @@ function RegisterContent() {
                   <span className="text-[rgba(160,160,200,0.6)]">Network</span>
                   <span className="font-medium text-white">Arc Testnet</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[rgba(160,160,200,0.6)]">Duration</span>
-                  <span className="font-medium text-white">1 year</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[rgba(160,160,200,0.6)]">Duration</span>
+                    <span className="font-medium text-white">
+                      {years} {years === 1 ? 'year' : 'years'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[1, 2, 3, 5].map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => setYears(option)}
+                        disabled={isBusy}
+                        className={cn(
+                          'rounded-lg border px-3 py-2 text-xs font-semibold transition-all',
+                          years === option
+                            ? 'border-indigo-400 bg-indigo-500/20 text-white shadow-[0_0_18px_rgba(99,102,241,0.25)]'
+                            : 'border-[rgba(99,102,241,0.16)] bg-[rgba(15,15,30,0.55)] text-[rgba(160,160,200,0.62)] hover:border-indigo-400/45 hover:text-white',
+                          isBusy && 'cursor-not-allowed opacity-60'
+                        )}
+                      >
+                        {option}y
+                      </button>
+                    ))}
+                  </div>
                 </div>
+                {annualPriceWei != null && years > 1 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[rgba(160,160,200,0.6)]">Annual price</span>
+                    <span className="font-medium text-[rgba(160,160,200,0.82)]">{formatUsdc(annualPriceWei)} / year</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-[rgba(160,160,200,0.6)]">Price</span>
+                  <span className="text-[rgba(160,160,200,0.6)]">Total price</span>
                   <span className={cn(
                     'font-semibold',
                     priceLoading ? 'text-[rgba(160,160,200,0.4)]' : 'text-emerald-400'
@@ -378,7 +416,7 @@ function RegisterContent() {
                     </>
                   ) : (
                     <>
-                      Register {formatDomain(name)}
+                      Register for {years} {years === 1 ? 'year' : 'years'} · {priceLabel}
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}
@@ -413,7 +451,7 @@ function RegisterContent() {
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
         <div className="text-xs text-[rgba(160,160,200,0.55)] leading-relaxed">
           <strong className="text-[rgba(160,160,200,0.8)]">.arc domains</strong> are minted directly on-chain via ZNS Connect
-          on Arc Network (Chain ID 5042002). You need USDC on Arc Testnet for the registration fee.{' '}
+          on Arc Network (Chain ID 5042002). Choose 1, 2, 3, or 5 years before signing. You need USDC on Arc Testnet for the registration fee.{' '}
           <a
             href="https://faucet.circle.com"
             target="_blank"
@@ -432,16 +470,16 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen">
       <Navbar />
-      <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-start px-4 pb-24 pt-28">
-        <div className="w-full max-w-xl">
+      <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-28">
+        <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-6">
-            <Badge variant="purple" className="mb-3">
+          <div className="mb-7 text-center">
+            <Badge variant="purple" className="mb-4">
               <Wallet className="h-3 w-3" /> Arc Testnet
             </Badge>
-            <h1 className="text-3xl font-bold text-white">Register</h1>
-            <p className="mt-1 text-sm text-[rgba(160,160,200,0.55)]">
-              Claim your .arc name on Arc Network
+            <h1 className="text-4xl font-bold tracking-tight text-white">Register your .arc name</h1>
+            <p className="mx-auto mt-2 max-w-md text-sm text-[rgba(160,160,200,0.58)]">
+              Claim a username directly on Arc Network — no redirect, no external mint page.
             </p>
           </div>
           <Suspense fallback={null}>

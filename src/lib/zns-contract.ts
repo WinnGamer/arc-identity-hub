@@ -54,9 +54,9 @@ export const ZNS_ABI = [
 /** 1 year in seconds */
 export const ONE_YEAR_SECONDS = 31_536_000n
 
-/** Build expiry timestamp = now + 1 year */
-export function buildExpiry(): bigint {
-  return BigInt(Math.floor(Date.now() / 1000)) + ONE_YEAR_SECONDS
+/** Build expiry timestamp = now + N years */
+export function buildExpiry(years = 1): bigint {
+  return BigInt(Math.floor(Date.now() / 1000)) + (ONE_YEAR_SECONDS * BigInt(years))
 }
 
 /** Format a wei USDC value (18 decimals) to human-readable string */

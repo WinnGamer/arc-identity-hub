@@ -5,7 +5,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { HeroSearch } from '@/components/home/HeroSearch'
 import { ConnectedIdentity } from '@/components/home/ConnectedIdentity'
 import { Badge } from '@/components/ui/Badge'
-import { Zap, Search, Globe, ArrowRight } from 'lucide-react'
+import { Zap, Search, Globe, ArrowRight, Wallet } from 'lucide-react'
 import Link from 'next/link'
 
 const features = [
@@ -72,11 +72,32 @@ export default function HomePage() {
           One name for your entire on-chain identity.
         </motion.p>
 
-        {/* Search */}
+        {/* Primary actions */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
+          className="mb-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center"
+        >
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_0_28px_rgba(99,102,241,0.35)] transition-all hover:bg-indigo-500 active:scale-[0.98]"
+          >
+            <Wallet className="h-4 w-4" /> Register .arc name
+          </Link>
+          <Link
+            href="/search"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[rgba(99,102,241,0.24)] bg-[rgba(15,15,30,0.58)] px-5 py-3 text-sm font-semibold text-indigo-200 transition-all hover:border-indigo-400/45 hover:bg-[rgba(99,102,241,0.12)]"
+          >
+            <Search className="h-4 w-4" /> Search identity
+          </Link>
+        </motion.div>
+
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="w-full max-w-2xl"
         >
           <HeroSearch />
