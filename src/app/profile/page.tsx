@@ -9,6 +9,7 @@ import { GlowCard } from '@/components/ui/GlowCard'
 import { Badge } from '@/components/ui/Badge'
 import { resolveAddress, formatDomain, shortenAddress } from '@/lib/zns'
 import { ZNS_CONTRACT_ADDRESS, ZNS_ABI, formatUsdc } from '@/lib/zns-contract'
+import { loadProfileLinks, saveProfileLinks, type ProfileLinks } from '@/lib/profile-links'
 import { cn } from '@/lib/utils'
 import {
   User, ExternalLink, Copy, CheckCheck,
@@ -43,27 +44,8 @@ function DiscordIcon({ className }: { className?: string }) {
   )
 }
 
-/* ── localStorage helpers for social links ────────────────────────────────── */
-interface SocialLinks {
-  x: string
-  telegram: string
-  discord: string
-}
-
-function loadLinks(address: string): SocialLinks {
-  if (typeof window === 'undefined') return { x: '', telegram: '', discord: '' }
-  try {
-    const raw = localStorage.getItem(`arc-links-${address.toLowerCase()}`)
-    if (!raw) return { x: '', telegram: '', discord: '' }
-    return JSON.parse(raw)
-  } catch {
-    return { x: '', telegram: '', discord: '' }
-  }
-}
-
-function saveLinks(address: string, links: SocialLinks) {
-  localStorage.setItem(`arc-links-${address.toLowerCase()}`, JSON.stringify(links))
-}
+/* ── Social links type alias ───────────────────────────────────────────── */
+type SocialLinks = ProfileLinks
 
 /* ── Domain card with renew/transfer ──────────────────────────────────────── */
 function DomainCard({
@@ -397,6 +379,7 @@ export default function ProfilePage() {
   // Social links state
   const [links, setLinks] = useState<SocialLinks>({ x: '', telegram: '', discord: '' })
   const [linksSaved, setLinksSaved] = useState(false)
+  const [linksSaving, setLinksSaving] = useState(false)
 
   const fetchDomains = useCallback(async (addr: string) => {
     setLoading(true)
@@ -411,14 +394,19 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!address) { setPrimaryDomain(null); setDomains([]); return }
     fetchDomains(address)
-    setLinks(loadLinks(address))
+    // Load links from Supabase
+    loadProfileLinks(address).then(setLinks)
   }, [address, fetchDomains])
 
-  const handleSaveLinks = () => {
+  const handleSaveLinks = async () => {
     if (!address) return
-    saveLinks(address, links)
-    setLinksSaved(true)
-    setTimeout(() => setLinksSaved(false), 2000)
+    setLinksSaving(true)
+    const ok = await saveProfileLinks(address, links)
+    setLinksSaving(false)
+    if (ok) {
+      setLinksSaved(true)
+      setTimeout(() => setLinksSaved(false), 2000)
+    }
   }
 
   const copyAddress = async () => {
@@ -542,14 +530,16 @@ export default function ProfilePage() {
               <h3 className="font-semibold text-white">Links</h3>
               <button
                 onClick={handleSaveLinks}
+                disabled={linksSaving}
                 className={cn(
                   'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
                   linksSaved
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-[rgba(99,102,241,0.12)] text-indigo-300 border border-[rgba(99,102,241,0.2)] hover:bg-[rgba(99,102,241,0.2)]'
+                    : 'bg-[rgba(99,102,241,0.12)] text-indigo-300 border border-[rgba(99,102,241,0.2)] hover:bg-[rgba(99,102,241,0.2)]',
+                  linksSaving && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                {linksSaved ? <><CheckCheck className="h-3 w-3" /> Saved</> : <><Save className="h-3 w-3" /> Save</>}
+                {linksSaving ? <><Loader2 className="h-3 w-3 animate-spin" /> Saving…</> : linksSaved ? <><CheckCheck className="h-3 w-3" /> Saved</> : <><Save className="h-3 w-3" /> Save</>}
               </button>
             </div>
             <div className="space-y-3">
@@ -572,7 +562,7 @@ export default function ProfilePage() {
               ))}
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Saved locally in your browser. On-chain profile records coming soon.
+              Your links are stored in the cloud and visible to everyone who looks up your profile.
             </p>
           </GlowCard>
 
