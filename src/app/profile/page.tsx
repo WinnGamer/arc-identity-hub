@@ -1,17 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { useAccount } from 'wagmi'
+import { useEffect, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { Navbar } from '@/components/layout/Navbar'
 import { GlowCard } from '@/components/ui/GlowCard'
 import { Badge } from '@/components/ui/Badge'
 import { resolveAddress, formatDomain, shortenAddress } from '@/lib/zns'
+import { ZNS_CONTRACT_ADDRESS, ZNS_ABI, formatUsdc } from '@/lib/zns-contract'
+import { cn } from '@/lib/utils'
 import {
   User, ExternalLink, Copy, CheckCheck,
-  Star,
+  Star, Loader2, RefreshCw, Send, ArrowRight,
+  Save, Calendar,
 } from 'lucide-react'
+
+const ARC_CHAIN_ID = 5042002
 
 /* ── Brand SVG icons ──────────────────────────────────────────────────────── */
 function XIcon({ className }: { className?: string }) {
@@ -38,6 +43,350 @@ function DiscordIcon({ className }: { className?: string }) {
   )
 }
 
+/* ── localStorage helpers for social links ────────────────────────────────── */
+interface SocialLinks {
+  x: string
+  telegram: string
+  discord: string
+}
+
+function loadLinks(address: string): SocialLinks {
+  if (typeof window === 'undefined') return { x: '', telegram: '', discord: '' }
+  try {
+    const raw = localStorage.getItem(`arc-links-${address.toLowerCase()}`)
+    if (!raw) return { x: '', telegram: '', discord: '' }
+    return JSON.parse(raw)
+  } catch {
+    return { x: '', telegram: '', discord: '' }
+  }
+}
+
+function saveLinks(address: string, links: SocialLinks) {
+  localStorage.setItem(`arc-links-${address.toLowerCase()}`, JSON.stringify(links))
+}
+
+/* ── Domain card with renew/transfer ──────────────────────────────────────── */
+function DomainCard({
+  domainName,
+  isPrimary,
+  address,
+}: {
+  domainName: string
+  isPrimary: boolean
+  address: `0x${string}`
+}) {
+  const cleanName = domainName.replace(/\.arc$/i, '')
+
+  // ─── On-chain lookup for expiration + tokenId ──────────────────────────
+  const { data: registryData } = useReadContract({
+    address: ZNS_CONTRACT_ADDRESS,
+    abi: ZNS_ABI,
+    functionName: 'registryLookupByName',
+    args: [cleanName],
+    chainId: ARC_CHAIN_ID,
+  })
+
+  const { data: tokenId } = useReadContract({
+    address: ZNS_CONTRACT_ADDRESS,
+    abi: ZNS_ABI,
+    functionName: 'domainLookup',
+    args: [cleanName],
+    chainId: ARC_CHAIN_ID,
+  })
+
+  const nameLen = cleanName.length as number
+  const { data: renewPriceWei } = useReadContract({
+    address: ZNS_CONTRACT_ADDRESS,
+    abi: ZNS_ABI,
+    functionName: 'priceToRenew',
+    args: [nameLen as unknown as never],
+    chainId: ARC_CHAIN_ID,
+  })
+
+  const expirationDate = registryData
+    ? new Date(Number(registryData.expirationDate) * 1000)
+    : null
+
+  // ─── UI state ──────────────────────────────────────────────────────────
+  const [activePanel, setActivePanel] = useState<'none' | 'renew' | 'transfer'>('none')
+  const [renewYears, setRenewYears] = useState(1)
+  const [transferTo, setTransferTo] = useState('')
+  const [txStatus, setTxStatus] = useState<'idle' | 'confirm' | 'pending' | 'success' | 'error'>('idle')
+  const [txError, setTxError] = useState('')
+  const [txHash, setTxHash] = useState<`0x${string}` | undefined>()
+
+  const { switchChainAsync } = useSwitchChain()
+  const { chainId } = useAccount()
+  const { writeContractAsync, isPending, reset: resetWrite } = useWriteContract()
+  const { isSuccess: txConfirmed, isError: txFailed } = useWaitForTransactionReceipt({
+    hash: txHash,
+    chainId: ARC_CHAIN_ID,
+  })
+
+  useEffect(() => {
+    if (txConfirmed) setTxStatus('success')
+    if (txFailed) { setTxStatus('error'); setTxError('Transaction reverted.') }
+  }, [txConfirmed, txFailed])
+
+  const renewPrice = renewPriceWei != null
+    ? (renewPriceWei as bigint) * BigInt(renewYears)
+    : undefined
+
+  // ─── Renew handler ─────────────────────────────────────────────────────
+  const handleRenew = async () => {
+    if (tokenId == null || renewPrice == null) return
+    setTxError('')
+    try {
+      if (chainId !== ARC_CHAIN_ID) {
+        setTxStatus('confirm')
+        await switchChainAsync({ chainId: ARC_CHAIN_ID })
+      }
+      setTxStatus('confirm')
+      const hash = await writeContractAsync({
+        address: ZNS_CONTRACT_ADDRESS,
+        abi: ZNS_ABI,
+        functionName: 'renewDomain',
+        args: [tokenId as bigint, BigInt(renewYears)],
+        value: renewPrice,
+        chainId: ARC_CHAIN_ID,
+      })
+      setTxHash(hash)
+      setTxStatus('pending')
+    } catch (err: unknown) {
+      const msg = (err as { shortMessage?: string; message?: string })?.shortMessage || (err as { message?: string })?.message || 'Failed'
+      if (msg.toLowerCase().includes('rejected') || msg.toLowerCase().includes('denied')) {
+        setTxStatus('idle')
+      } else {
+        setTxStatus('error'); setTxError(msg)
+      }
+      resetWrite()
+    }
+  }
+
+  // ─── Transfer handler ──────────────────────────────────────────────────
+  const handleTransfer = async () => {
+    if (tokenId == null || !transferTo || !/^0x[0-9a-fA-F]{40}$/.test(transferTo)) return
+    setTxError('')
+    try {
+      if (chainId !== ARC_CHAIN_ID) {
+        setTxStatus('confirm')
+        await switchChainAsync({ chainId: ARC_CHAIN_ID })
+      }
+      setTxStatus('confirm')
+      const hash = await writeContractAsync({
+        address: ZNS_CONTRACT_ADDRESS,
+        abi: ZNS_ABI,
+        functionName: 'transferFrom',
+        args: [address, transferTo as `0x${string}`, tokenId as bigint],
+        chainId: ARC_CHAIN_ID,
+      })
+      setTxHash(hash)
+      setTxStatus('pending')
+    } catch (err: unknown) {
+      const msg = (err as { shortMessage?: string; message?: string })?.shortMessage || (err as { message?: string })?.message || 'Failed'
+      if (msg.toLowerCase().includes('rejected') || msg.toLowerCase().includes('denied')) {
+        setTxStatus('idle')
+      } else {
+        setTxStatus('error'); setTxError(msg)
+      }
+      resetWrite()
+    }
+  }
+
+  const isBusy = isPending || txStatus === 'confirm' || txStatus === 'pending'
+
+  const handleReset = () => {
+    setActivePanel('none')
+    setTxStatus('idle')
+    setTxHash(undefined)
+    setTxError('')
+    setTransferTo('')
+    setRenewYears(1)
+    resetWrite()
+  }
+
+  return (
+    <div className="rounded-xl border border-[rgba(99,102,241,0.15)] bg-[rgba(8,8,18,0.5)] p-4 space-y-3">
+      {/* Domain header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm font-semibold text-white truncate">{formatDomain(cleanName)}</span>
+          {isPrimary && (
+            <span className="shrink-0 rounded-full bg-indigo-600/30 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
+              PRIMARY
+            </span>
+          )}
+        </div>
+        {expirationDate && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Calendar className="h-3 w-3 text-slate-500" />
+            <span className="text-xs text-slate-400">
+              {expirationDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Action buttons */}
+      {txStatus === 'success' ? (
+        <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2.5">
+          <span className="text-sm text-emerald-400 font-medium">
+            {activePanel === 'renew' ? '✓ Renewed!' : '✓ Transferred!'}
+          </span>
+          <div className="flex items-center gap-2">
+            {txHash && (
+              <a
+                href={`https://testnet.arcscan.app/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-indigo-400 hover:underline flex items-center gap-1"
+              >
+                Tx <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+            <button onClick={handleReset} className="text-xs text-slate-400 hover:text-white">
+              Done
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { handleReset(); setActivePanel(activePanel === 'renew' ? 'none' : 'renew') }}
+              disabled={isBusy}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all',
+                activePanel === 'renew'
+                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                  : 'bg-[rgba(15,15,30,0.55)] text-slate-400 border border-[rgba(99,102,241,0.12)] hover:text-white hover:border-indigo-400/30',
+                isBusy && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <RefreshCw className="h-3 w-3" /> Renew
+            </button>
+            <button
+              onClick={() => { handleReset(); setActivePanel(activePanel === 'transfer' ? 'none' : 'transfer') }}
+              disabled={isBusy}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all',
+                activePanel === 'transfer'
+                  ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
+                  : 'bg-[rgba(15,15,30,0.55)] text-slate-400 border border-[rgba(99,102,241,0.12)] hover:text-white hover:border-indigo-400/30',
+                isBusy && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <Send className="h-3 w-3" /> Transfer
+            </button>
+          </div>
+
+          {/* Renew panel */}
+          <AnimatePresence>
+            {activePanel === 'renew' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3 pt-1">
+                  <div className="grid grid-cols-4 gap-2">
+                    {[1, 2, 3, 5].map(y => (
+                      <button
+                        key={y}
+                        onClick={() => setRenewYears(y)}
+                        disabled={isBusy}
+                        className={cn(
+                          'rounded-lg border px-2 py-2 text-xs font-semibold transition-all',
+                          renewYears === y
+                            ? 'border-indigo-400 bg-indigo-500/20 text-white'
+                            : 'border-[rgba(99,102,241,0.2)] bg-[rgba(15,15,30,0.55)] text-slate-400 hover:text-white'
+                        )}
+                      >
+                        {y}y
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">Cost</span>
+                    <span className="font-medium text-emerald-400">
+                      {renewPrice != null ? formatUsdc(renewPrice) : '...'}
+                    </span>
+                  </div>
+
+                  {txError && (
+                    <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">{txError}</p>
+                  )}
+
+                  <button
+                    onClick={handleRenew}
+                    disabled={isBusy || renewPrice == null}
+                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isBusy ? (
+                      <><Loader2 className="h-3 w-3 animate-spin" /> {txStatus === 'confirm' ? 'Confirm in wallet…' : 'Waiting…'}</>
+                    ) : (
+                      <>Renew {renewYears}y · {renewPrice != null ? formatUsdc(renewPrice) : '...'}</>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Transfer panel */}
+          <AnimatePresence>
+            {activePanel === 'transfer' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3 pt-1">
+                  <input
+                    type="text"
+                    value={transferTo}
+                    onChange={e => setTransferTo(e.target.value.trim())}
+                    placeholder="0x... recipient address"
+                    disabled={isBusy}
+                    className="w-full rounded-lg border border-[rgba(99,102,241,0.2)] bg-[rgba(8,8,18,0.8)] px-3 py-2.5 text-sm text-white font-mono placeholder-slate-600 outline-none focus:border-indigo-400/50 disabled:opacity-50"
+                  />
+
+                  {transferTo && !/^0x[0-9a-fA-F]{40}$/.test(transferTo) && (
+                    <p className="text-xs text-amber-400">Enter a valid Ethereum address</p>
+                  )}
+
+                  {txError && (
+                    <p className="text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2 border border-red-500/20">{txError}</p>
+                  )}
+
+                  <button
+                    onClick={handleTransfer}
+                    disabled={isBusy || !transferTo || !/^0x[0-9a-fA-F]{40}$/.test(transferTo)}
+                    className="w-full flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-3 py-2.5 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isBusy ? (
+                      <><Loader2 className="h-3 w-3 animate-spin" /> {txStatus === 'confirm' ? 'Confirm in wallet…' : 'Waiting…'}</>
+                    ) : (
+                      <><Send className="h-3 w-3" /> Transfer domain</>
+                    )}
+                  </button>
+
+                  <p className="text-[11px] text-slate-500 text-center">
+                    ⚠️ This action is irreversible. The domain will be owned by the recipient.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+    </div>
+  )
+}
+
+/* ── Main Profile page ────────────────────────────────────────────────────── */
 export default function ProfilePage() {
   const { address, isConnected } = useAccount()
   const [primaryDomain, setPrimaryDomain] = useState<string | null>(null)
@@ -45,17 +394,32 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // Social links state
+  const [links, setLinks] = useState<SocialLinks>({ x: '', telegram: '', discord: '' })
+  const [linksSaved, setLinksSaved] = useState(false)
+
+  const fetchDomains = useCallback(async (addr: string) => {
+    setLoading(true)
+    const data = await resolveAddress(addr)
+    if (data) {
+      setPrimaryDomain(data.primaryDomain ? formatDomain(data.primaryDomain) : null)
+      setDomains(data.userOwnedDomains?.map(formatDomain) || [])
+    }
+    setLoading(false)
+  }, [])
+
   useEffect(() => {
     if (!address) { setPrimaryDomain(null); setDomains([]); return }
-    setLoading(true)
-    resolveAddress(address).then(data => {
-      if (data) {
-        setPrimaryDomain(data.primaryDomain ? formatDomain(data.primaryDomain) : null)
-        setDomains(data.userOwnedDomains?.map(formatDomain) || [])
-      }
-      setLoading(false)
-    })
-  }, [address])
+    fetchDomains(address)
+    setLinks(loadLinks(address))
+  }, [address, fetchDomains])
+
+  const handleSaveLinks = () => {
+    if (!address) return
+    saveLinks(address, links)
+    setLinksSaved(true)
+    setTimeout(() => setLinksSaved(false), 2000)
+  }
 
   const copyAddress = async () => {
     if (!address) return
@@ -96,15 +460,14 @@ export default function ProfilePage() {
       <main className="relative z-10 flex min-h-screen w-full flex-col items-center justify-center px-4 py-28">
         <div className="w-full max-w-2xl">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="text-center">
+          <div className="flex flex-col items-center text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white">Profile</h1>
-            <p className="mt-3 text-base text-slate-400">Your connected wallet identity on Arc Network</p>
+            <p className="mt-3 text-center text-base text-slate-400">Your connected wallet identity on Arc Network</p>
           </div>
 
           {/* Identity card */}
           <GlowCard glow>
             <div className="flex items-start gap-4">
-              {/* Avatar placeholder */}
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600/40 to-violet-600/40 border border-indigo-500/20 text-2xl">
                 {primaryDomain ? primaryDomain[0].toUpperCase() : '?'}
               </div>
@@ -152,61 +515,64 @@ export default function ProfilePage() {
             </div>
           </GlowCard>
 
-          {/* Owned domains */}
+          {/* Owned domains with Renew / Transfer */}
           {domains.length > 0 && (
             <GlowCard>
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-4 flex items-center gap-2">
                 <Star className="h-4 w-4 text-indigo-400" />
                 <h3 className="font-semibold text-white">Your .arc Domains</h3>
                 <span className="rounded-full bg-indigo-600/20 px-2 py-0.5 text-xs text-indigo-300">{domains.length}</span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-3">
                 {domains.map(d => (
-                  <div
+                  <DomainCard
                     key={d}
-                    className={`rounded-xl border p-3 transition-colors ${
-                      d === primaryDomain
-                        ? 'border-indigo-500/40 bg-indigo-600/10'
-                        : 'border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-white truncate">{d}</span>
-                      {d === primaryDomain && (
-                        <span className="shrink-0 rounded-full bg-indigo-600/30 px-1.5 py-0.5 text-[10px] font-medium text-indigo-300 ml-1">
-                          PRIMARY
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    domainName={d}
+                    isPrimary={d === primaryDomain}
+                    address={address!}
+                  />
                 ))}
               </div>
             </GlowCard>
           )}
 
-          {/* Social links (placeholder for future) */}
+          {/* Social links — editable with localStorage */}
           <GlowCard>
-            <h3 className="mb-4 font-semibold text-white">Links</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-white">Links</h3>
+              <button
+                onClick={handleSaveLinks}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+                  linksSaved
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-[rgba(99,102,241,0.12)] text-indigo-300 border border-[rgba(99,102,241,0.2)] hover:bg-[rgba(99,102,241,0.2)]'
+                )}
+              >
+                {linksSaved ? <><CheckCheck className="h-3 w-3" /> Saved</> : <><Save className="h-3 w-3" /> Save</>}
+              </button>
+            </div>
             <div className="space-y-3">
               {[
-                { icon: XIcon, label: 'X', placeholder: '@yourhandle' },
-                { icon: TelegramIcon, label: 'Telegram', placeholder: '@yourusername' },
-                { icon: DiscordIcon, label: 'Discord', placeholder: 'yourusername#0000' },
-              ].map(({ icon: Icon, label, placeholder }) => (
-                <div key={label} className="flex items-center gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] px-4 py-3.5">
+                { icon: XIcon, key: 'x' as const, label: 'X', placeholder: '@yourhandle' },
+                { icon: TelegramIcon, key: 'telegram' as const, label: 'Telegram', placeholder: '@yourusername' },
+                { icon: DiscordIcon, key: 'discord' as const, label: 'Discord', placeholder: 'yourusername' },
+              ].map(({ icon: Icon, key, label, placeholder }) => (
+                <div key={key} className="flex items-center gap-3 rounded-xl border border-[rgba(99,102,241,0.12)] bg-[rgba(8,8,18,0.5)] px-4 py-3">
                   <Icon className="h-4 w-4 shrink-0 text-slate-400" />
-                  <span className="text-sm font-medium text-slate-300 w-20">{label}</span>
+                  <span className="text-sm font-medium text-slate-300 w-20 shrink-0">{label}</span>
                   <input
                     type="text"
+                    value={links[key]}
+                    onChange={e => setLinks(prev => ({ ...prev, [key]: e.target.value }))}
                     placeholder={placeholder}
-                    disabled
-                    className="flex-1 bg-transparent text-sm text-slate-500 placeholder-slate-600 outline-none cursor-not-allowed"
+                    className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 outline-none"
                   />
                 </div>
               ))}
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              On-chain profile records — coming in next update
+              Saved locally in your browser. On-chain profile records coming soon.
             </p>
           </GlowCard>
 
@@ -214,12 +580,12 @@ export default function ProfilePage() {
           {!loading && domains.length === 0 && (
             <GlowCard>
               <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <p className="text-sm text-slate-400">You don't have any .arc domains yet</p>
+                <p className="text-sm text-slate-400">You don&apos;t have any .arc domains yet</p>
                 <a
                   href="/register"
-                  className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
                 >
-                  Get your .arc name
+                  Get your .arc name <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
             </GlowCard>

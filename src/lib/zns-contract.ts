@@ -14,6 +14,7 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as cons
 
 // Minimal ABI — only the functions we use
 export const ZNS_ABI = [
+  // ─── Price reads ────────────────────────────────────────────────────────
   {
     name: 'priceToRegister',
     type: 'function',
@@ -28,6 +29,8 @@ export const ZNS_ABI = [
     inputs: [{ internalType: 'uint16', name: 'len', type: 'uint16' }],
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
   },
+
+  // ─── Registration ──────────────────────────────────────────────────────
   {
     name: 'registerDomains',
     type: 'function',
@@ -41,6 +44,33 @@ export const ZNS_ABI = [
     ],
     outputs: [],
   },
+
+  // ─── Renewal ───────────────────────────────────────────────────────────
+  {
+    name: 'renewDomain',
+    type: 'function',
+    stateMutability: 'payable',
+    inputs: [
+      { internalType: 'uint256', name: '_tokenId', type: 'uint256' },
+      { internalType: 'uint256', name: '_years', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+
+  // ─── ERC-721 Transfer ──────────────────────────────────────────────────
+  {
+    name: 'transferFrom',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { internalType: 'address', name: 'from', type: 'address' },
+      { internalType: 'address', name: 'to', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+
+  // ─── Lookups ───────────────────────────────────────────────────────────
   {
     name: 'registryLookupByName',
     type: 'function',
